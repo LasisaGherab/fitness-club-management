@@ -1,16 +1,11 @@
 import { Mail, Award } from 'lucide-react';
 import type { Coach } from '../../types';
 
-// Ici, la Prop s'appelle directement "coach" et son type est notre
-// interface "Coach" définie dans types.ts. C'est la méthode la plus simple
-// et la plus lisible : un composant qui affiche une entité reçoit
-// souvent cette entité complète en une seule Prop nommée comme elle.
 interface CoachCardProps {
   coach: Coach;
 }
 
-// Calcule les initiales d'un nom, utilisées comme avatar par défaut
-// (si le champ optionnel "photoUrl" n'est pas fourni).
+// Initiales d'un nom, utilisées comme avatar par défaut (si "photoUrl" n'est pas fourni).
 const getInitials = (fullName: string): string => {
   return fullName
     .split(' ')

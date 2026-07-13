@@ -6,13 +6,10 @@ interface ClassesPageProps {
   coaches: Coach[];
 }
 
-// L'ordre d'affichage des jours de la semaine (un tableau typé avec DayOfWeek).
 const daysOrder: DayOfWeek[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
 const ClassesPage = ({ classes, coaches }: ClassesPageProps) => {
-  // Petite fonction utilitaire : retrouve le nom d'un coach à partir de son id.
-  // Le "?? 'Coach inconnu'" fournit une valeur de repli si aucun coach ne correspond,
-  // ce qui règle proprement le cas "Coach | undefined" évoqué plus haut.
+
   const getCoachName = (coachId: string): string => {
     const coach = coaches.find((c) => c.id === coachId);
     return coach?.name ?? 'Coach inconnu';

@@ -2,9 +2,6 @@ import { Users, Dumbbell, CalendarDays, Wallet } from 'lucide-react';
 import StatCard from '../ui/StatCard';
 import type { Member, Coach, FitnessClass, Payment } from '../../types';
 
-// Ce composant reçoit toutes les données nécessaires pour calculer ses
-// statistiques. C'est le parent (App.tsx) qui centralisera l'état des données
-// et les transmettra à chaque page via des Props, comme ici.
 interface DashboardPageProps {
   members: Member[];
   coaches: Coach[];
@@ -13,9 +10,7 @@ interface DashboardPageProps {
 }
 
 const DashboardPage = ({ members, coaches, classes, payments }: DashboardPageProps) => {
-  // Quelques calculs dérivés directement à partir des données reçues.
-  // Pas besoin de nouvel état ici : ce sont de simples valeurs calculées
-  // à chaque rendu à partir des Props (des "valeurs dérivées").
+
   const activeMembers = members.filter((member) => member.status === 'Active').length;
 
   const pendingPayments = payments.filter((payment) => payment.status === 'Pending').length;

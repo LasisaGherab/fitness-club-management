@@ -13,7 +13,6 @@ type StatusFilter = PaymentStatus | 'All';
 const PaymentsPage = ({ payments, members }: PaymentsPageProps) => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('All');
 
-  // Retrouve le nom d'un membre à partir de son id.
   const getMemberName = (memberId: string): string => {
     const member = members.find((m) => m.id === memberId);
     return member?.name ?? 'Membre inconnu';

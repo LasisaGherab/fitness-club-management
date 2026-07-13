@@ -9,16 +9,11 @@ import {
 } from 'lucide-react';
 import type { TabId } from '../../types';
 
-// On décrit précisément ce que le composant Sidebar attend de son parent.
 interface SidebarProps {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
 }
 
-// On définit ici, une seule fois, la liste des onglets à afficher.
-// Chaque entrée associe un identifiant (TabId), un libellé et une icône.
-// Ce tableau est typé grâce à "id: TabId", ce qui garantit que l'on ne peut
-// pas ajouter par erreur un onglet qui n'existe pas dans notre type union.
 const navItems: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'members', label: 'Membres', icon: Users },
@@ -28,9 +23,6 @@ const navItems: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'attendance', label: 'Présences', icon: ClipboardCheck },
 ];
 
-// Composant fonctionnel : on déstructure directement les Props reçues.
-// Le typage ": SidebarProps" garantit que si "activeTab" ou "onTabChange"
-// venait à manquer lors de l'utilisation du composant, une erreur apparaîtrait.
 const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
   return (
     // Barre latérale fixe, hauteur pleine écran, fond blanc, bordure à droite

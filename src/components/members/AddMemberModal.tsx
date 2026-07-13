@@ -6,20 +6,16 @@ import type { Member, MembershipType } from '../../types';
 interface AddMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // Cette fonction remonte le NOUVEAU membre créé jusqu'au parent (MembersPage),
-  // qui décidera de l'ajouter à la liste globale.
   onAddMember: (member: Member) => void;
 }
 
 const AddMemberModal = ({ isOpen, onClose, onAddMember }: AddMemberModalProps) => {
-  // Un état local pour CHAQUE champ du formulaire. Chacun est typé simplement :
-  // useState<string> pour du texte, et notre type union pour l'abonnement.
+
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const [membershipType, setMembershipType] = useState<MembershipType>('Basic');
 
-  // Réinitialise tous les champs : utile après l'envoi du formulaire.
   const resetForm = () => {
     setName('');
     setEmail('');
@@ -27,12 +23,11 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember }: AddMemberModalProps) =
     setMembershipType('Basic');
   };
 
-  // La fonction appelée à la soumission du formulaire.
+  // Soumission du formulaire.
   // "e" est typé comme un événement de formulaire HTML.
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Empêche le rechargement complet de la page
 
-    // On construit un nouvel objet Member, parfaitement conforme à l'interface.
     // "crypto.randomUUID()" génère un identifiant unique côté navigateur.
     const newMember: Member = {
       id: crypto.randomUUID(),
@@ -90,9 +85,7 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember }: AddMemberModalProps) =
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Type d'abonnement</label>
-          {/* On force la valeur de "e.target.value" (toujours "string" en HTML)
-              vers notre type union MembershipType grâce à "as". C'est sûr ici
-              car les <option> ci-dessous ne proposent QUE ces 3 valeurs exactes. */}
+
           <select
             value={membershipType}
             onChange={(e) => setMembershipType(e.target.value as MembershipType)}

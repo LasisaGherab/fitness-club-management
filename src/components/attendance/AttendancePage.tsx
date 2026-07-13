@@ -6,31 +6,26 @@ interface AttendancePageProps {
   classes: FitnessClass[];
   members: Member[];
   attendance: AttendanceRecord[];
-  // Le parent gère l'ajout ou la mise à jour d'un enregistrement de présence.
+  
   onMarkAttendance: (memberId: string, classId: string, present: boolean) => void;
 }
 
-// La date du jour, au format "AAAA-MM-JJ", calculée une seule fois.
+// La date du jour, au format "AAAA-MM-JJ"
 const today = new Date().toISOString().split('T')[0];
 
 const AttendancePage = ({ classes, members, attendance, onMarkAttendance }: AttendancePageProps) => {
-  // L'id du cours actuellement sélectionné dans le menu déroulant.
-  // On initialise avec le premier cours disponible, ou une chaîne vide s'il n'y en a aucun.
+
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
 
   const selectedClass = classes.find((fitnessClass) => fitnessClass.id === selectedClassId);
 
-  // Retrouve les objets Member complets à partir des ids inscrits au cours sélectionné.
-  // ".filter(Boolean)" élimine les éventuels "undefined" si un id ne correspond à aucun membre,
-  // et permet à TypeScript de garantir que le résultat final est bien "Member[]" (pas "(Member | undefined)[]").
+
   const enrolledMembers: Member[] = selectedClass
     ? selectedClass.enrolledMemberIds
         .map((memberId) => members.find((member) => member.id === memberId))
         .filter((member): member is Member => member !== undefined)
     : [];
 
-  // Retrouve, pour un membre donné, s'il existe déjà un enregistrement de présence
-  // pour AUJOURD'HUI et pour le cours sélectionné.
   const getAttendanceStatus = (memberId: string): boolean | undefined => {
     const record = attendance.find(
       (a) => a.memberId === memberId && a.classId === selectedClassId && a.date === today

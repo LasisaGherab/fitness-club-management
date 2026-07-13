@@ -1,8 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
 
-// Les Props que ce composant générique attend : un libellé, une valeur,
-// une icône (typée grâce au type "LucideIcon" fourni par la librairie),
-// et une couleur d'accent optionnelle.
 interface StatCardProps {
   label: string;
   value: number | string;

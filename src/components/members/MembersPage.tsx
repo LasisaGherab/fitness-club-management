@@ -5,8 +5,7 @@ import type { Member } from '../../types';
 
 interface MembersPageProps {
   members: Member[];
-  // On typera cette fonction pour qu'elle accepte n'importe quelle fonction
-  // de mise à jour compatible avec un useState<Member[]> défini plus haut (App.tsx).
+
   onAddMember: (member: Member) => void;
   onDeleteMember: (memberId: string) => void;
 }

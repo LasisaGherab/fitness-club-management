@@ -1,13 +1,4 @@
-// src/data/mockData.ts
-
 import type { Member, Coach, FitnessClass, Payment, AttendanceRecord } from '../types';
-
-// --------------------------------------------------------------------------
-// Chaque tableau est typé avec "Type[]" : un tableau d'éléments de ce type.
-// Si un objet ci-dessous ne respecte pas l'interface (champ manquant, ou
-// mauvaise valeur pour un type union), TypeScript affichera une erreur ici
-// même, avant d'exécuter quoi que ce soit.
-// --------------------------------------------------------------------------
 
 export const mockMembers: Member[] = [
   {
