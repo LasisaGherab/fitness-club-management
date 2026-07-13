@@ -5,7 +5,7 @@ import MembersPage from './components/members/MembersPage';
 import CoachesPage from './components/coaches/CoachesPage';
 import ClassesPage from './components/classes/ClassesPage'; 
 import AttendancePage from './components/attendance/AttendancePage';
-import PaymentsPage from './components/payments/PaymentsPage';
+import PaymentsPage from './components/payments/Paymentspage';
 import useLocalStorage from './hooks/useLocalStorage';
 import { mockMembers, mockCoaches, mockClasses, mockPayments, mockAttendance } from './data/mockData';
 import type { TabId, Member, Coach, FitnessClass, Payment, AttendanceRecord } from './types';
