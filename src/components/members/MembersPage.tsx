@@ -1,17 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import AddMemberModal from './AddMemberModal';
-import type { Member } from '../../types';
+import { fetchMembers, createMember, deleteMember } from '../../api';
+import type { Member, MembershipType } from '../../types';
 
-interface MembersPageProps {
-  members: Member[];
-
-  onAddMember: (member: Member) => void;
-  onDeleteMember: (memberId: string) => void;
-}
-
-// Un petit composant interne pour afficher un badge de statut coloré.
-// Il est défini dans ce même fichier car il n'est utilisé que par MembersPage.
 const StatusBadge = ({ status }: { status: Member['status'] }) => {
   const isActive = status === 'Active';
   return (
@@ -25,8 +17,55 @@ const StatusBadge = ({ status }: { status: Member['status'] }) => {
   );
 };
 
-const MembersPage = ({ members, onAddMember, onDeleteMember }: MembersPageProps) => {
+const MembersPage = () => {
+  const [members, setMembers] = useState<Member[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadMembers = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchMembers();
+        setMembers(data);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMembers();
+  }, []);
+
+  const handleAddMember = async (formData: {
+    name: string;
+    email: string;
+    phone: string;
+    membershipType: MembershipType;
+  }) => {
+    try {
+      const newMember = await createMember(formData);
+      setMembers((prev) => [...prev, newMember]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors de la création');
+    }
+  };
+
+  const handleDeleteMember = async (memberId: string) => {
+    try {
+      await deleteMember(memberId);
+      setMembers((prev) => prev.filter((member) => member.id !== memberId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression');
+    }
+  };
+
+  if (isLoading) {
+    return <p className="text-slate-500">Chargement des membres...</p>;
+  }
 
   return (
     <div className="space-y-6">
@@ -44,6 +83,12 @@ const MembersPage = ({ members, onAddMember, onDeleteMember }: MembersPageProps)
           Ajouter un membre
         </button>
       </div>
+
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-lg px-4 py-3">
+          {error}
+        </div>
+      )}
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <table className="w-full text-sm text-left">
@@ -68,7 +113,7 @@ const MembersPage = ({ members, onAddMember, onDeleteMember }: MembersPageProps)
                 <td className="px-6 py-4 text-right">
                   <button
                     type="button"
-                    onClick={() => onDeleteMember(member.id)}
+                    onClick={() => handleDeleteMember(member.id)}
                     className="text-rose-500 hover:text-rose-700"
                     aria-label={`Supprimer ${member.name}`}
                   >
@@ -88,7 +133,7 @@ const MembersPage = ({ members, onAddMember, onDeleteMember }: MembersPageProps)
       <AddMemberModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAddMember={onAddMember}
+        onAddMember={handleAddMember}
       />
     </div>
   );
