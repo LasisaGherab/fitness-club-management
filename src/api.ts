@@ -1,4 +1,14 @@
-import type { Member, Coach, FitnessClass, Payment, AttendanceRecord, MembershipType, PaymentStatus } from './types';
+import type { 
+  Member, 
+  Coach, 
+  FitnessClass, 
+  Payment, 
+  AttendanceRecord, 
+  MembershipType, 
+  PaymentStatus, 
+  MemberStatus, 
+  DayOfWeek
+} from './types';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -8,6 +18,22 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
     throw new Error(errorBody.message ?? `Erreur HTTP ${response.status}`);
   }
   return response.json() as Promise<T>;
+};
+
+// ----------------------------- DASHBOARD -----------------------------------
+
+export interface DashboardStats {
+  totalMembers: number;
+  activeMembers: number;
+  totalCoaches: number;
+  totalClasses: number;
+  pendingPayments: number;
+  totalRevenue: number;
+}
+
+export const fetchDashboardStats = async (): Promise<DashboardStats> => {
+  const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
+  return handleResponse<DashboardStats>(response);
 };
 
 // ----------------------------- MEMBRES -------------------------------------
@@ -36,11 +62,39 @@ export const deleteMember = async (id: string): Promise<void> => {
   await handleResponse<{ message: string; id: string }>(response);
 };
 
+export const updateMemberStatus = async (id: string, status: MemberStatus): Promise<Member> => {
+  const response = await fetch(`${API_BASE_URL}/members/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  return handleResponse<Member>(response);
+};
+
 // ----------------------------- COACHS ---------------------------------------
 
 export const fetchCoaches = async (): Promise<Coach[]> => {
   const response = await fetch(`${API_BASE_URL}/coaches`);
   return handleResponse<Coach[]>(response);
+};
+
+export const createCoach = async (data: {
+  name: string;
+  specialty: string;
+  email: string;
+  experienceYears: number;
+}): Promise<Coach> => {
+  const response = await fetch(`${API_BASE_URL}/coaches`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Coach>(response);
+};
+
+export const deleteCoach = async (id: string): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/coaches/${id}`, { method: 'DELETE' });
+  await handleResponse<{ message: string; id: string }>(response);
 };
 
 // ----------------------------- CLASSES --------------------------------------
@@ -50,11 +104,40 @@ export const fetchClasses = async (): Promise<FitnessClass[]> => {
   return handleResponse<FitnessClass[]>(response);
 };
 
+export const createClass = async (data: {
+  name: string;
+  day: DayOfWeek;
+  time: string;
+  coachId: string;
+  capacity: number;
+}): Promise<FitnessClass> => {
+  const response = await fetch(`${API_BASE_URL}/classes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<FitnessClass>(response);
+};
+
 // ----------------------------- PAIEMENTS ------------------------------------
 
 export const fetchPayments = async (): Promise<Payment[]> => {
   const response = await fetch(`${API_BASE_URL}/payments`);
   return handleResponse<Payment[]>(response);
+};
+
+export const createPayment = async (data: {
+  memberId: string;
+  amount: number;
+  date: string;
+  status: PaymentStatus;
+}): Promise<Payment> => {
+  const response = await fetch(`${API_BASE_URL}/payments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Payment>(response);
 };
 
 export const updatePaymentStatus = async (id: string, status: PaymentStatus): Promise<Payment> => {

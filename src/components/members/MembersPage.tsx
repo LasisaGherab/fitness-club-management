@@ -1,19 +1,29 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import AddMemberModal from './AddMemberModal';
-import { fetchMembers, createMember, deleteMember } from '../../api';
+import { fetchMembers, createMember, deleteMember, updateMemberStatus } from '../../api';
 import type { Member, MembershipType } from '../../types';
 
-const StatusBadge = ({ status }: { status: Member['status'] }) => {
+interface StatusToggleProps {
+  status: Member['status'];
+  onToggle: () => void;
+}
+
+const StatusToggle = ({ status, onToggle }: StatusToggleProps) => {
   const isActive = status === 'Active';
   return (
-    <span
-      className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-        isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+        isActive
+          ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+          : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
       }`}
+      title="Cliquer pour changer le statut"
     >
       {isActive ? 'Actif' : 'Inactif'}
-    </span>
+    </button>
   );
 };
 
@@ -63,6 +73,16 @@ const MembersPage = () => {
     }
   };
 
+  const handleToggleStatus = async (member: Member) => {
+    const newStatus = member.status === 'Active' ? 'Inactive' : 'Active';
+    try {
+      const updatedMember = await updateMemberStatus(member.id, newStatus);
+      setMembers((prev) => prev.map((m) => (m.id === updatedMember.id ? updatedMember : m)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors de la mise à jour du statut');
+    }
+  };
+
   if (isLoading) {
     return <p className="text-slate-500">Chargement des membres...</p>;
   }
@@ -108,7 +128,7 @@ const MembersPage = () => {
                 <td className="px-6 py-4 text-slate-500">{member.email}</td>
                 <td className="px-6 py-4 text-slate-500">{member.membershipType}</td>
                 <td className="px-6 py-4">
-                  <StatusBadge status={member.status} />
+                  <StatusToggle status={member.status} onToggle={() => handleToggleStatus(member)} />
                 </td>
                 <td className="px-6 py-4 text-right">
                   <button

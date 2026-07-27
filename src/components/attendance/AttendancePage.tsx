@@ -1,24 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, X } from 'lucide-react';
+import { fetchClasses, fetchMembers, fetchAttendance, markAttendance } from '../../api';
 import type { FitnessClass, Member, AttendanceRecord } from '../../types';
 
-interface AttendancePageProps {
-  classes: FitnessClass[];
-  members: Member[];
-  attendance: AttendanceRecord[];
-  
-  onMarkAttendance: (memberId: string, classId: string, present: boolean) => void;
-}
-
-// La date du jour, au format "AAAA-MM-JJ"
 const today = new Date().toISOString().split('T')[0];
 
-const AttendancePage = ({ classes, members, attendance, onMarkAttendance }: AttendancePageProps) => {
+const AttendancePage = () => {
+  const [classes, setClasses] = useState<FitnessClass[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
+  // Chargement initial des 3 ressources dont cette page a besoin.
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [classesData, membersData, attendanceData] = await Promise.all([
+          fetchClasses(),
+          fetchMembers(),
+          fetchAttendance(),
+        ]);
+        setClasses(classesData);
+        setMembers(membersData);
+        setAttendance(attendanceData);
+        // On sélectionne le premier cours disponible par défaut, une fois les
+        // données chargées (on ne peut pas le faire avant, elles n'existent pas encore).
+        setSelectedClassId(classesData[0]?.id ?? '');
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const selectedClass = classes.find((fitnessClass) => fitnessClass.id === selectedClassId);
-
 
   const enrolledMembers: Member[] = selectedClass
     ? selectedClass.enrolledMemberIds
@@ -33,12 +55,41 @@ const AttendancePage = ({ classes, members, attendance, onMarkAttendance }: Atte
     return record?.present;
   };
 
+  // Marque la présence, puis met à jour l'état local à partir de la réponse du serveur.
+  const handleMark = async (memberId: string, present: boolean) => {
+    try {
+      const updatedRecord = await markAttendance(memberId, selectedClassId, present);
+
+      setAttendance((prev) => {
+        const existingIndex = prev.findIndex((record) => record.id === updatedRecord.id);
+        if (existingIndex !== -1) {
+          const updated = [...prev];
+          updated[existingIndex] = updatedRecord;
+          return updated;
+        }
+        return [...prev, updatedRecord];
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors du marquage de présence');
+    }
+  };
+
+  if (isLoading) {
+    return <p className="text-slate-500">Chargement des présences...</p>;
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-slate-800">Présences</h1>
         <p className="text-slate-500 mt-1">Check-in du jour ({today})</p>
       </div>
+
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-lg px-4 py-3">
+          {error}
+        </div>
+      )}
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 space-y-4">
         <div>
@@ -57,7 +108,7 @@ const AttendancePage = ({ classes, members, attendance, onMarkAttendance }: Atte
         </div>
 
         <div className="divide-y divide-slate-100">
-          {enrolledMembers.map((member) => {
+          {members.map((member) => {
             const status = getAttendanceStatus(member.id);
 
             return (
@@ -66,7 +117,7 @@ const AttendancePage = ({ classes, members, attendance, onMarkAttendance }: Atte
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => onMarkAttendance(member.id, selectedClassId, true)}
+                    onClick={() => handleMark(member.id, true)}
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium ${
                       status === true
                         ? 'bg-emerald-600 text-white'
@@ -77,7 +128,7 @@ const AttendancePage = ({ classes, members, attendance, onMarkAttendance }: Atte
                   </button>
                   <button
                     type="button"
-                    onClick={() => onMarkAttendance(member.id, selectedClassId, false)}
+                    onClick={() => handleMark(member.id, false)}
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium ${
                       status === false
                         ? 'bg-rose-600 text-white'
@@ -91,8 +142,8 @@ const AttendancePage = ({ classes, members, attendance, onMarkAttendance }: Atte
             );
           })}
 
-          {enrolledMembers.length === 0 && (
-            <p className="text-center text-slate-400 py-6">Aucun membre inscrit à ce cours.</p>
+          {members.length === 0 && (
+            <p className="text-center text-slate-400 py-6">Aucun membre enregistré.</p>
           )}
         </div>
       </div>
